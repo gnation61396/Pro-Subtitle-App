@@ -14,10 +14,6 @@ st.set_page_config(page_title="Pro Subtitle Generator", layout="wide")
 st.title("🎬 Single-Step Subtitle Generator (AssemblyAI)")
 st.markdown("---")
 
-if API_KEY == "YOUR_ASSEMBLYAI_API_KEY_HERE":
-    st.error("❌ ERROR: Please replace the placeholder API_KEY in the code with your actual AssemblyAI key.")
-    st.stop()
-
 # --- INPUT AND SETTINGS ---
 
 # Sidebar for professional settings
@@ -104,4 +100,5 @@ if uploaded_file is not None:
         # Clean up the temporary file
 
         os.remove(temp_file_path)
+
 
