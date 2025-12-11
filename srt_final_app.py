@@ -1,19 +1,60 @@
-# Force Streamlit to recognize this is a new file version (4.0)
+# Version 6.0: Final Stable Code with Dual Language and Premium Features
 import streamlit as st
 import assemblyai as aai
 import os
 
 # --- IMPORTANT CONFIGURATION ---
 # This line securely fetches the key from the website's Secrets manager
-API_KEY = st.secrets["general"]["assembly_api_key"]
+# DO NOT CHANGE THIS LINE - IT IS THE SECURE WAY TO LOAD THE KEY
+API_KEY = st.secrets["general"]["assembly_api_key"] 
 aai.settings.api_key = API_KEY
 
 
 # --- STREAMLIT APP UI & DESIGN ---
 st.set_page_config(page_title="Pro Subtitle Generator", layout="wide")
 
-st.title("🎬 Professional Subtitle Generator (AssemblyAI)")
-st.markdown("---")
+# Custom Title/Branding Area
+st.markdown(
+    """
+    <div style='text-align: center; padding: 10px; background-color: #f0f0f5; border-radius: 10px;'>
+        <h1 style='color: #0069d9; font-size: 40px;'>🎬 Professional Subtitle & Analysis Tool</h1>
+    </div>
+    <hr/>
+    """,
+    unsafe_allow_html=True
+)
+
+# Custom CSS for Premium Buttons (Matching config.toml theme)
+st.markdown(
+    """
+    <style>
+        /* Main Button Styling */
+        div.stButton > button {
+            background-color: #007bff; /* Primary Blue */
+            color: white; /* White text */
+            border-radius: 10px; /* Rounded corners */
+            padding: 10px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 2px solid #007bff; 
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        
+        /* Button Hover Effect (Premium) */
+        div.stButton > button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+            border-color: #0056b3;
+        }
+        
+        /* Sidebar Headers (for consistency with the blue accent) */
+        .css-pkz3mm {
+            color: #007bff; 
+            font-weight: 700;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # --- INPUT AND SETTINGS ---
 
@@ -21,10 +62,10 @@ st.markdown("---")
 with st.sidebar:
     st.header("Subtitle Formatting")
     
-    # 1. Character Limit (Fixed to allow min 14)
+    # 1. Character Limit (Fixed to allow min 2)
     max_chars = st.number_input(
         "Max Characters Per Line",
-        min_value=2, # <--- FIX: Changed min value to 14
+        min_value=2, # Min limit fixed at 2
         max_value=60,
         value=42, 
         step=1,
@@ -39,30 +80,20 @@ with st.sidebar:
         help="Select 1 or 2 lines per subtitle block."
     )
     
-    # 3. Subtitle Gap/Spacing (Required by editors for clean cuts)
+    # 3. Subtitle Gap/Spacing
     subtitle_gap_ms = st.number_input(
         "Min Subtitle Gap (milliseconds)",
         min_value=0,
         max_value=1000,
-        value=200, # 200ms is a standard gap (0.2 seconds)
+        value=200, 
         step=50,
-        help="The minimum time (in milliseconds) required between one subtitle ending and the next one starting."
+        help="The minimum time (ms) required between one subtitle ending and the next one starting."
     )
 
-    st.header("Language & Diarization")
+    st.header("Language & Analysis")
     diarization_enabled = st.checkbox("Enable Speaker Diarization (Speaker 1, Speaker 2)", value=True)
     
-    st.info("AssemblyAI automatically handles multiple languages and code-switching.")
-    
-    # --- Design Update (From config.toml theme) ---
-    st.markdown("""
-        <style>
-            .stButton>button {
-                background-color: #007bff;
-                color: white;
-            }
-        </style>
-    """, unsafe_allow_html=True)
+    st.info("Now configured for high accuracy with both English and Hebrew.")
 
 
 # Main Uploader
@@ -73,21 +104,22 @@ if uploaded_file is not None:
     st.subheader("1. Start Transcription")
     
     # Button to start the process
-    if st.button("Generate Timed Captions"):
+    if st.button("Generate Timed Captions & Transcript"):
         
         # --- Transcription Process ---
         transcriber = aai.Transcriber()
         
-        # Save file to a temporary location for the transcriber
         temp_file_path = f"temp_{uploaded_file.name}"
         with open(temp_file_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
 
-        with st.spinner("Uploading and Transcribing... This may take several minutes for long videos."):
+        with st.spinner("Uploading and Transcribing (This may take a few minutes for long videos)..."):
             
-            # Transcription parameters including diarization
+            # --- CRITICAL FIX: Dual Language Configuration ---
             config = aai.TranscriptionConfig(
-                speaker_diarization=diarization_enabled
+                speaker_diarization=diarization_enabled,
+                language_code="en", 
+                language_codes=["he", "en"] # Enable code-switching for Hebrew and English
             )
             
             # Call the service
@@ -99,8 +131,6 @@ if uploaded_file is not None:
         else:
             
             st.subheader("2. Download Files")
-            
-            # --- Subtitle Generation ---
             
             # Subtitle Gap (converted from ms to seconds for the function)
             subtitle_gap_seconds = subtitle_gap_ms / 1000.0
@@ -118,9 +148,9 @@ if uploaded_file is not None:
                 max_lines=max_lines,
                 subtitle_gap=subtitle_gap_seconds 
             )
-
-            st.success("Captions generated successfully. Download and import into Premiere Pro or web players.")
             
+            st.success("Analysis complete! Download files below.")
+
             # Download Button: SRT
             st.download_button(
                 label="Download SRT File (Premiere Pro)",
@@ -132,13 +162,20 @@ if uploaded_file is not None:
             
             # Download Button: VTT
             st.download_button(
-                label="Download VTT File (Web Players/YouTube)",
+                label="Download VTT File (Web/YouTube)",
                 data=vtt_content,
                 file_name="transcript.vtt",
                 mime="text/vtt",
                 key="vtt_download"
             )
 
+            # --- CRITICAL FEATURE: Raw Transcript Output (for Proofing) ---
+            st.subheader("3. Raw Transcript (Proofread Here)")
+            st.text_area(
+                "Full Transcript (Edit text below before downloading)", 
+                value=transcript.text, 
+                height=250
+            )
+
         # Clean up the temporary file
         os.remove(temp_file_path)
-
