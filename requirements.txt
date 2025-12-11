@@ -1,2 +1,5 @@
-streamlit
-assemblyai
+# This line securely fetches the key from the website's Secrets manager
+API_KEY = st.secrets["general"]["assembly_api_key"]
+
+# Now, set the AssemblyAI key for the transcriber
+aai.settings.api_key = API_KEY
