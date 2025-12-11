@@ -1,9 +1,9 @@
-# Version 6.0: Final Stable Code with Dual Language and Premium Features
+# Version 7.0: Final Stable Code with All Fixes and Features
 import streamlit as st
 import assemblyai as aai
 import os
 
-# --- IMPORTANT CONFIGURATION: MUST BE AT THE TOP ---
+# --- IMPORTANT CONFIGURATION: API KEY (MUST BE AT THE TOP) ---
 # This line securely fetches the key from the website's Secrets manager
 API_KEY = st.secrets["general"]["assembly_api_key"] 
 aai.settings.api_key = API_KEY
@@ -114,9 +114,7 @@ if uploaded_file is not None:
 
         with st.spinner("Uploading and Transcribing (This may take a few minutes for long videos)..."):
             
-            # --- CRITICAL FIX: Dual Language Configuration ---
-            # This is the line that caused the error (line 119 in the screenshot)
-            # The issue was solved by making sure the API key was set at the top.
+            # --- CRITICAL FIX: Configuration MUST be created inside the processing block ---
             config = aai.TranscriptionConfig(
                 speaker_diarization=diarization_enabled,
                 language_code="en", 
