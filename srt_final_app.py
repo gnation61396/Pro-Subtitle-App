@@ -1,4 +1,4 @@
-# Version 7.0: Final Stable Code with All Fixes and Features
+# Version 7.1: FINAL STABLE CODE - FIXING CRASH ON LOAD
 import streamlit as st
 import assemblyai as aai
 import os
@@ -114,7 +114,7 @@ if uploaded_file is not None:
 
         with st.spinner("Uploading and Transcribing (This may take a few minutes for long videos)..."):
             
-            # --- CRITICAL FIX: Configuration MUST be created inside the processing block ---
+            # --- CRITICAL FIX: Configuration is now safely created INSIDE the button block ---
             config = aai.TranscriptionConfig(
                 speaker_diarization=diarization_enabled,
                 language_code="en", 
